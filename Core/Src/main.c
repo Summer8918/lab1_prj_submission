@@ -89,11 +89,39 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+  // RCC clock
+	RCC->AHBENR |= RCC_AHBENR_GPIOCEN; // Enable peripheral clock to PC
+	// // red PC6 blue:PC7
+	// Set the pins to general-purpose output mode in the MODER register
+	GPIOC->MODER |= (1 << 12);  // MODER6, 6 is the pin of PC6
+	GPIOC->MODER |= (1 << 14);  // MODER7, 7 is the pin of PC7
 
-    /* USER CODE BEGIN 3 */
+	/*
+	 Although clearing bits that should already be zero is not always necessary, it is good
+style to ensure that every bit is in a known state.
+	*/
+	// Set the pins to push-pull output type in the OTYPER register
+	// push-pull output type is the default mode.
+	// 0: Output push-pull (reset state)
+	// red: PC6, blue:PC7
+	GPIOC->OTYPER &= ~((1 << 6) | (1 << 7));
+	// Set the pins to low speed in the OSPEEDR register
+	// x0: Low speed (default) 0x0
+	GPIOC->OSPEEDR &= ~((1 << 12) | (1 << 13) | (1 << 14) | (1 << 15));
+
+	// Set to no pull-up/down resistors in the PUPDR register
+	//00: No pull-up, pull-down
+	GPIOC->PUPDR &= ~((1 << 12) | (1 << 13) | (1 << 14) | (1 << 15));
+
+  // set PC6 to 1
+	GPIOC->ODR |= (1 << 6);
+	// set PC7 to 0
+	GPIOC->ODR &= ~(1 << 7);
+
+  while (1) {
+    HAL_Delay(400); // Delay 400ms
+		GPIOC->ODR ^= (1 << 6);
+		GPIOC->ODR ^= (1 << 7);
   }
   /* USER CODE END 3 */
 }
